@@ -1,0 +1,7 @@
+              Factura de compra
+Nombre del cliente: fasd
+Dirección del cliente: asdf
+corral                                                                          $. . .14000
+Calorias del producto : 546
+Precio total                            $ . . .14000
+Precio total con iva                    $ . . .16660.0

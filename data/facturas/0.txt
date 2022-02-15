@@ -1,6 +1,0 @@
-              Factura de compra
-Nombre del cliente: fasd
-Dirección del cliente: dsaf
-gaseosa                                                                         $. . .5000
-Precio total                            5000
-Precio total con iva                    5950.0

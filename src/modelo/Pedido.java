@@ -3,8 +3,11 @@ package modelo;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class Pedido {
+
+
     private int numeroPedidos;
     private int idPedido;
     private String nombreCliente;
@@ -23,8 +26,27 @@ public class Pedido {
 
     }
 
-    public int getIdPedido() {
 
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Pedido pedido = (Pedido) o;
+        return numeroPedidos == pedido.numeroPedidos  && numeroItems == pedido.numeroItems && Objects.equals(itemsPedido, pedido.itemsPedido);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(numeroPedidos, idPedido, nombreCliente, direccionCliente, itemsPedido, numeroItems, restaurante);
+    }
+
+    public ArrayList<Producto> getItemsPedido(){
+        return itemsPedido;
+    }
+
+
+    public int getIdPedido() {
         return this.idPedido;
     }
 
@@ -53,9 +75,21 @@ public class Pedido {
         for (Producto producto : itemsPedido) {
             textoFactura += (producto.generarTextoFactura() + "\n");
         }
-        textoFactura += ("Precio total " + " ".repeat(27) + getPrecioPedido()) + "\n";
-        textoFactura += ("Precio total con iva" + " ".repeat(20) + (getPrecioPedido() * 0.19 + getPrecioPedido()));
+
+        textoFactura +=("Calorias del producto : "+getCalorias());
+        textoFactura += ("\nPrecio total " + " ".repeat(27) + "$ . . ."+getPrecioPedido()) + "\n";
+        textoFactura += ("Precio total con iva" + " ".repeat(20) + "$ . . ."+ (getPrecioPedido() * 0.19 + getPrecioPedido()));
         return textoFactura;
+    }
+
+
+
+    public int getCalorias(){
+        int calorias=0;
+        for(Producto producto: itemsPedido){
+            calorias+= producto.getCalorias();
+        }
+        return calorias;
     }
 
     public void guardarFactura(File archivo) throws Exception {

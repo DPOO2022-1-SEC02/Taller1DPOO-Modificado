@@ -16,7 +16,7 @@ public class Aplicacion {
     private final File archivoMenu = new File("./data/menu.txt");
     private final File archivoCombos = new File("./data/combos.txt");
     private final File archivoIngredientes = new File("./data/ingredientes.txt");
-
+    private final File archivoBebidas = new File("./data/bebidas.txt");
 
     public static void main(String[] args) throws Exception {
         Aplicacion aplicacion = new Aplicacion();
@@ -29,7 +29,7 @@ public class Aplicacion {
         int opcion;
         boolean continuar = true;
         int id;
-        restaurante.cargarInformacionRestaurante(archivoIngredientes, archivoMenu, archivoCombos);
+        restaurante.cargarInformacionRestaurante(archivoIngredientes, archivoMenu, archivoCombos,archivoBebidas);
 
         while (continuar) {
 
@@ -41,6 +41,8 @@ public class Aplicacion {
                 case (1) -> {
                     restaurante.mostrarMenuBase();
                     restaurante.mostrarCombos();
+                    restaurante.mostrarBebidas();
+                    
                 }
 
                 case (2) -> {

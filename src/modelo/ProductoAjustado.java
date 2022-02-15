@@ -43,4 +43,8 @@ public class ProductoAjustado implements Producto {
 		agregados.add(ingrediente);
 	}
 	
+	public int getCalorias(){
+		return base.getCalorias();
+	}
+	
 }

@@ -1,8 +1,7 @@
 package modelo;
 
-import procesamiento.Procesamiento;
-
 import java.io.*;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public class Restaurante {
@@ -10,9 +9,9 @@ public class Restaurante {
     private ArrayList<ProductoMenu> menuBase;
     private ArrayList<Combo> combos;
     private ArrayList<Pedido> pedidos;
+    private ArrayList<Bebida> bebidas;
+    private ArrayList<Pedido> pedidosListos;
     private int pedidoEnCurso;
-
-    private Procesamiento procesador = new Procesamiento();
 
 
     public Restaurante() {
@@ -20,15 +19,17 @@ public class Restaurante {
         this.menuBase = new ArrayList<>();
         this.combos = new ArrayList<>();
         this.pedidos = new ArrayList<>();
+        this.pedidosListos = new ArrayList<>();
+        this.bebidas = new ArrayList<>();
         this.pedidoEnCurso = 0;
     }
 
 
-    public void cargarInformacionRestaurante(File archivoIngredientes, File archivoMenu, File archivoCombos) throws Exception {
+    public void cargarInformacionRestaurante(File archivoIngredientes, File archivoMenu, File archivoCombos, File archivoBebidas) throws Exception {
         cargarMenuBase(archivoMenu);
-        cargarCombos(archivoCombos);
+        cargarBebidas(archivoBebidas);
         cargaIngredientes(archivoIngredientes);
-
+        cargarCombos(archivoCombos);
     }
 
 
@@ -43,7 +44,8 @@ public class Restaurante {
             info = line.split(";");
             String nombre = info[0];
             int precio = Integer.parseInt(info[1]);
-            productoMenu = new ProductoMenu(nombre, precio);
+            int calorias = Integer.parseInt(info[2]);
+            productoMenu = new ProductoMenu(nombre, precio, calorias);
             menuBase.add(productoMenu);
             line = br.readLine();
         }
@@ -51,6 +53,24 @@ public class Restaurante {
 
     }
 
+
+    public void cargarBebidas(File archivoBebidas) throws Exception {
+        BufferedReader br = new BufferedReader(new FileReader(archivoBebidas));
+        String line = br.readLine();
+        String[] info;
+        Bebida bebida;
+
+        while (line != null) {
+            info = line.split(";");
+            String nombre = info[0];
+            int precio = Integer.parseInt(info[1]);
+            int calorias = Integer.parseInt(info[2]);
+            bebida = new Bebida(nombre, precio, calorias);
+            bebidas.add(bebida);
+            line = br.readLine();
+        }
+        br.close();
+    }
 
     private void cargarCombos(File archivoCombos) throws Exception {
 
@@ -65,7 +85,17 @@ public class Restaurante {
             descuento = descuento / 100;
             combo = new Combo(nombreCombo, descuento);
             for (int i = 2; i < partes.length; i++) {
-                combo.agregarItemACombo(procesador.buscarProducto(menuBase, partes[i]));
+                Producto productoAdd = buscarProducto(menuBase, partes[i]);
+                Bebida bebidaAdd = buscarBebida(bebidas,partes[i]);
+
+                if (productoAdd != null) {
+                      combo.agregarItemACombo(productoAdd);
+                      }
+//                else{
+//                    combo.agregarItemACombo(bebidaAdd);
+//                   // System.out.println(bebidaAdd.getPrecio());
+               // }
+
             }
             combos.add(combo);
 
@@ -98,11 +128,19 @@ public class Restaurante {
         }
     }
 
+    public void mostrarBebidas() {
+        int cont = 1;
+        System.out.println("\nBebidas:\n");
+        for (Bebida bebida : bebidas) {
+            System.out.println(cont + ". " + bebida.getNombre() + ": $" + bebida.getPrecio());
+            cont++;
+        }
+    }
+
     private void cargaIngredientes(File archivoIngredientes) throws Exception {
 
 
         BufferedReader br = new BufferedReader(new FileReader(archivoIngredientes));
-        String message = " "; //*
         String line = br.readLine();
         String[] ingInfo;
         Ingrediente ingrediente;
@@ -111,7 +149,8 @@ public class Restaurante {
             ingInfo = line.split(";");
             String nombre = ingInfo[0];
             int precio = Integer.parseInt(ingInfo[1]);
-            ingrediente = new Ingrediente(nombre, precio);
+            int calorias = Integer.parseInt(ingInfo[2]);
+            ingrediente = new Ingrediente(nombre, precio, calorias);
             ingredientes.add(ingrediente);
 
             line = br.readLine();
@@ -133,7 +172,8 @@ public class Restaurante {
         while (continuar) {
             int seleccion = Integer.parseInt(input("""
                     1. Ver menú clásico.
-                    2. Ver combos
+                    2. Ver combos.
+                    3. Ver bebidas.
                     0. Volver"""));
             if (seleccion == 1) {
 
@@ -142,6 +182,8 @@ public class Restaurante {
             } else if (seleccion == 2) {
                 agregarCombo(pedido);
 
+            } else if (seleccion == 3) {
+                agregarBebida(pedido);
             } else {
                 if (pedido.getCantidadItems() != 0) pedidos.add(pedido);
                 continuar = false;
@@ -151,6 +193,13 @@ public class Restaurante {
 
     }
 
+
+    private void agregarBebida(Pedido pedido) {
+        mostrarBebidas();
+        int bSeleccion = Integer.parseInt(input("Selecciona una de las bebidas disponibles por favor")) - 1;
+        Bebida bebida = bebidas.get(bSeleccion);
+        pedido.agregarProducto(bebida);
+    }
 
     private void agregarCombo(Pedido pedido) {
         mostrarCombos();
@@ -198,10 +247,31 @@ public class Restaurante {
         int cont = 1;
         System.out.println("\nIngredientes:\n ");
         for (Ingrediente ingrediente : ingredientes) {
-            System.out.println(cont + ". " + ingrediente.getNombre() + ": " + ingrediente.getCostoAdicional());
+            System.out.println(cont + ". " + ingrediente.getNombre() + ": $" + ingrediente.getCostoAdicional());
             cont++;
         }
 
+    }
+
+
+    public ProductoMenu buscarProducto(ArrayList<ProductoMenu> menuBase, String nombre) {
+        for (ProductoMenu producto : menuBase) {
+            if (producto.getNombre().equals(nombre)) {
+                return producto;
+            }
+        }
+        return null;
+    }
+
+    public Bebida buscarBebida(ArrayList<Bebida> bebidas, String nombre) {
+
+        for (Bebida bebida:bebidas)
+        {
+            if (bebida.getNombre().equals(nombre)){
+                return bebida;
+            }
+        }
+        return null;
     }
 
     public ArrayList<ProductoMenu> getMenuBase() {
@@ -222,9 +292,16 @@ public class Restaurante {
     }
 
     public void cerrarYGuardarPedido() throws Exception {
-        Pedido cosa = pedidos.get(id_actual);
-        System.out.println(cosa.getIdPedido());
-        cosa.guardarFactura(new File("./data/facturas/" + id_actual + ".txt"));
+        Pedido orden = pedidos.get(id_actual);
+        for(Pedido pedido : pedidosListos){
+            System.out.println(pedido);
+            if (orden.equals(pedido)){
+                System.err.print("Ya existe un pedido igual, por favor intente de nuevo.");
+                return;
+            }
+        }
+        pedidosListos.add(orden);
+        orden.guardarFactura(new File("./data/facturas/" + id_actual + ".txt"));
         pedidoEnCurso = 0;
         id_actual++;
 
